@@ -1,10 +1,24 @@
-// License: GNU GPL 3
-// 
-// For protocol spec see:
-// http://amigadev.elowar.com/read/ADCD_2.1/Hardware_Manual_guide/node0173.html
+/*
+    Copyright 2016 Janne Lof
 
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /*
+
+For protocol spec see:
+http://amigadev.elowar.com/read/ADCD_2.1/Hardware_Manual_guide/node0173.html
 
 The keyboard transmits 8-bit data words serially to the main unit. Before
 the transmission starts, both KCLK and KDAT are high.  The keyboard starts
@@ -53,7 +67,6 @@ GROUND  <--green-------5
 STATUS  <--blue--------6 (disk drive led)
 INUSE   <--violet------7 (power led)
 
-
 */
 
 // arduino pin mappings
@@ -63,46 +76,48 @@ INUSE   <--violet------7 (power led)
 #define PIN_KDAT  9  // brown
 
 
-#define HI 1
-#define LO 0
+class AmigaKb {
+  
+  enum { HI = 1, LO = 0 };
 
-unsigned klck = HI;
-unsigned kdata = 0;
-unsigned kbits = 0;
+  byte klck;
+  byte kdata;
+  byte kbits; 
 
-inline unsigned get_klck()
-{
+  byte get_klck()
+  {
     // active high? seems like it is
     return digitalRead(PIN_KLCK) ? HI : LO;
-}
-inline unsigned  get_kdat()
-{
+  }
+  byte get_kdat()
+  {
     // active low +5V == 0, 0V == 1
     return digitalRead(PIN_KDAT) ? LO : HI;
-}
-inline void pulse_kdat()
-{
-    //Serial.print('+');
+  }
+  void pulse_kdat()
+  {
     // pulse low +5V at least for 85 micros
     pinMode(PIN_KDAT, OUTPUT);
     digitalWrite(PIN_KDAT, HIGH);
-    delayMicroseconds(120);
+    delayMicroseconds(150);
     digitalWrite(PIN_KDAT, LOW);
     pinMode(PIN_KDAT, INPUT_PULLUP);
-}
+  }
 
-void amiga_kb_green(bool state)
-{
-  digitalWrite(LED_GREEN, state ? HIGH : LOW);
-}
-void amiga_kb_red(bool state)
-{
-  digitalWrite(LED_RED, state ? HIGH : LOW);
-}
+public:
 
-// call this in setup()
-void amiga_kb_init()
-{
+  void green(bool state)
+  {
+    digitalWrite(LED_GREEN, state ? HIGH : LOW);
+  }
+  void red(bool state)
+  {
+    digitalWrite(LED_RED, state ? HIGH : LOW);
+  }
+
+  // call this in setup()
+  void init()
+  {
     klck = HI;
     kdata = 0;
     kbits = 0;
@@ -110,60 +125,61 @@ void amiga_kb_init()
     pinMode(PIN_KDAT, INPUT_PULLUP);
     pinMode(LED_RED,   OUTPUT);     
     pinMode(LED_GREEN, OUTPUT);
-}
-
-// call this in loop(), returns raw keycode or -1 if no key was read
-int amiga_kb_loop()
-{
-    static const int bitorder[] = { 6,5,4,3,2,1,0,7 };
-    int ret = -1;
+  }
+  
+  // call this in loop(), returns raw keycode or -1 if no key was read
+  int pollkey()
+  {
+    static const byte bitorder[] = { 6,5,4,3,2,1,0,7 };
+    int rawkey = -1;
     
-    /* latch, only react if klck changes */
-    unsigned k = get_klck();
-    if ( k == klck )
-        return -1;
-    klck = k;
-
-    /* HI --> LO */
-    if ( klck == LO && kbits <= 7) {
+    byte k = get_klck();
+    // only react if clock changes
+    if ( k != klck ) {
+      klck = k;
+      // HI --> LO
+      if ( klck == LO && kbits <= 7 ) {
         //Serial.print('*');
         kdata |= (get_kdat()<<bitorder[kbits]);
         kbits++;
-    /* LO --> HI */
-    } else if ( klck == HI && kbits > 7) {
-        //Serial.print('*');
-        ret = kdata;
+      // LO --> HI
+      } else if ( klck == HI && kbits > 7 ) {
+        //Serial.print('+');
+        rawkey = kdata;
         kbits = 0;
         kdata = 0;
         pulse_kdat();
+      }
     }
-    return ret;
-}
+    return rawkey;
+  }
+
+};
 
 
-
+AmigaKb amigakb;
 
 // the setup routine runs once when you press reset:
 void setup() {              
   // initialize the digital pin as an output.
   Serial.begin(9600);
-  amiga_kb_init();
-  amiga_kb_red(true);
+  amigakb.init();
+  amigakb.red(true);
   Serial.println("started");
 }
 
 // the loop routine runs over and over again forever:
 void loop() {
   
-  int rawkey = amiga_kb_loop();
+  int rawkey = amigakb.pollkey();
   if (rawkey != -1) {
     
     if (rawkey & 0x80) {
       Serial.print("up   ");
-      amiga_kb_green(false);
+      amigakb.green(false);
     } else {
       Serial.print("down ");
-      amiga_kb_green(true);
+      amigakb.green(true);
     }
     Serial.print(rawkey, HEX);
     Serial.println();
