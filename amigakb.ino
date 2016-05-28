@@ -171,6 +171,29 @@ void setup() {
   
 }
 
+// following keycodes are missing from arduino library, but
+// Keyboard library maps USB HID usage codes to 136+<usage code>
+#define KEYCODE_OFFSET   136
+
+#define KEY_KPRIGHTPAREN (KEYCODE_OFFSET+0x47) // scrolllock
+#define KEY_KPLEFTPAREN  (KEYCODE_OFFSET+0x53) // numlock
+#define KEY_KPSLASH     (KEYCODE_OFFSET+0x54)
+#define KEY_KPASTERISK  (KEYCODE_OFFSET+0x55)
+#define KEY_KPMINUS     (KEYCODE_OFFSET+0x56)
+#define KEY_KPPLUS      (KEYCODE_OFFSET+0x57)
+#define KEY_KPENTER     (KEYCODE_OFFSET+0x58)
+#define KEY_KP1         (KEYCODE_OFFSET+0x59)
+#define KEY_KP2         (KEYCODE_OFFSET+0x5a)
+#define KEY_KP3         (KEYCODE_OFFSET+0x5b)
+#define KEY_KP4         (KEYCODE_OFFSET+0x5c)
+#define KEY_KP5         (KEYCODE_OFFSET+0x5d)
+#define KEY_KP6         (KEYCODE_OFFSET+0x5e)
+#define KEY_KP7         (KEYCODE_OFFSET+0x5f)
+#define KEY_KP8         (KEYCODE_OFFSET+0x60)
+#define KEY_KP9         (KEYCODE_OFFSET+0x61)
+#define KEY_KP0         (KEYCODE_OFFSET+0x62)
+#define KEY_KPDOT       (KEYCODE_OFFSET+0x63)
+
 
 static char keycode[0x78] = {
 	[0]	 = '~', // grave
@@ -188,7 +211,7 @@ static char keycode[0x78] = {
 	[12]	 = '=', // equal
 	[13]	 = '\\', //KEY_BACKSLASH,
         [14]     =  0,
-	[15]	 = '0', //KEY_KP0,
+	[15]	 = KEY_KP0,
 	[16]	 = 'q',
 	[17]	 = 'w',
 	[18]	 = 'e',
@@ -202,9 +225,9 @@ static char keycode[0x78] = {
 	[26]	 = '[', //KEY_LEFTBRACE,
 	[27]	 = ']', //KEY_RIGHTBRACE,
         [28]     =  0,
-	[29]	 = '1', //KEY_KP1,
-	[30]	 = '2', //KEY_KP2,
-	[31]	 = '3', //KEY_KP3,
+	[29]	 = KEY_KP1,
+	[30]	 = KEY_KP2,
+	[31]	 = KEY_KP3,
 	[32]	 = 'a',
 	[33]	 = 's',
 	[34]	 = 'd',
@@ -218,9 +241,9 @@ static char keycode[0x78] = {
 	[42]	 = '.', //KEY_APOSTROPHE,
 	[43]	 = '\\', //KEY_BACKSLASH,
         [44]     =  0,
-	[45]	 = '4', //KEY_KP4,
-	[46]	 = '5', //KEY_KP5,
-	[47]	 = '6', //KEY_KP6,
+	[45]	 = KEY_KP4,
+	[46]	 = KEY_KP5,
+	[47]	 = KEY_KP6,
 	[48]	 = '.', //KEY_102ND,
 	[49]	 = 'z',
 	[50]	 = 'x',
@@ -233,21 +256,21 @@ static char keycode[0x78] = {
 	[57]	 = '.', //KEY_DOT,
 	[58]	 = '/', //KEY_SLASH,
         [59]     = 0,
-	[60]	 = '.', //KEY_KPDOT,
-	[61]	 = '7', //KEY_KP7,
-	[62]	 = '8', //KEY_KP8,
-	[63]	 = '9', //KEY_KP9,
+	[60]	 = KEY_KPDOT,
+	[61]	 = KEY_KP7,
+	[62]	 = KEY_KP8,
+	[63]	 = KEY_KP9,
 	[64]	 = ' ', //KEY_SPACE,
 	[65]	 = KEY_BACKSPACE,
 	[66]	 = KEY_TAB,
-	[67]	 = KEY_RETURN, //KEY_KPENTER,
+	[67]	 = KEY_KPENTER,
 	[68]	 = KEY_RETURN, //KEY_ENTER,
 	[69]	 = KEY_ESC,
 	[70]	 = KEY_DELETE,
         [71]     = 0,
         [72]     = 0,
         [73]     = 0,
-	[74]	 = '-', //KEY_KPMINUS,
+	[74]	 = KEY_KPMINUS,
         [75]     = 0,
 	[76]	 = KEY_UP_ARROW, //KEY_UP,
 	[77]	 = KEY_DOWN_ARROW, //KEY_DOWN,
@@ -263,11 +286,11 @@ static char keycode[0x78] = {
 	[87]	 = KEY_F8,
 	[88]	 = KEY_F9,
 	[89]	 = KEY_F10,
-	[90]	 = '[', //KEY_KPLEFTPAREN,
-	[91]	 = ']', //KEY_KPRIGHTPAREN,
-	[92]	 = '/', //KEY_KPSLASH,
-	[93]	 = '*', //KEY_KPASTERISK,
-	[94]	 = '+', //KEY_KPPLUS,
+	[90]	 = KEY_KPLEFTPAREN,
+	[91]	 = KEY_KPRIGHTPAREN,
+	[92]	 = KEY_KPSLASH,
+	[93]	 = KEY_KPASTERISK,
+	[94]	 = KEY_KPPLUS,
 	[95]	 = KEY_F11, //KEY_HELP,
 	[96]	 = KEY_LEFT_SHIFT,
 	[97]	 = KEY_RIGHT_SHIFT,
