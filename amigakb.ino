@@ -76,102 +76,7 @@ INUSE   <--violet------7 (power led)
 #define PIN_KDAT  9  // brown
 
 
-class AmigaKb {
-  
-  enum { HI = 1, LO = 0 };
-
-  byte klck;
-  byte kdata;
-  byte kbits; 
-
-  byte get_klck()
-  {
-    // active high? seems like it is
-    return digitalRead(PIN_KLCK) ? HI : LO;
-  }
-  byte get_kdat()
-  {
-    // active low +5V == 0, 0V == 1
-    return digitalRead(PIN_KDAT) ? LO : HI;
-  }
-  void pulse_kdat()
-  {
-    // pulse low +5V at least for 85 micros
-    pinMode(PIN_KDAT, OUTPUT);
-    digitalWrite(PIN_KDAT, HIGH);
-    delayMicroseconds(150);
-    digitalWrite(PIN_KDAT, LOW);
-    pinMode(PIN_KDAT, INPUT_PULLUP);
-  }
-
-public:
-
-  void green(bool state)
-  {
-    digitalWrite(LED_GREEN, state ? HIGH : LOW);
-  }
-  void red(bool state)
-  {
-    digitalWrite(LED_RED, state ? HIGH : LOW);
-  }
-
-  // call this in setup()
-  void init()
-  {
-    klck = HI;
-    kdata = 0;
-    kbits = 0;
-    pinMode(PIN_KLCK, INPUT_PULLUP);
-    pinMode(PIN_KDAT, INPUT_PULLUP);
-    pinMode(LED_RED,   OUTPUT);     
-    pinMode(LED_GREEN, OUTPUT);
-  }
-  
-  // call this in loop(), returns raw keycode or -1 if no key was read
-  int pollkey()
-  {
-    static const byte bitorder[] = { 6,5,4,3,2,1,0,7 };
-    int rawkey = -1;
-    
-    byte k = get_klck();
-    // only react if clock changes
-    if ( k != klck ) {
-      klck = k;
-      // HI --> LO
-      if ( klck == LO && kbits <= 7 ) {
-        //Serial.print('*');
-        kdata |= (get_kdat()<<bitorder[kbits]);
-        kbits++;
-      // LO --> HI
-      } else if ( klck == HI && kbits > 7 ) {
-        //Serial.print('+');
-        rawkey = kdata;
-        kbits = 0;
-        kdata = 0;
-        pulse_kdat();
-      }
-    }
-    return rawkey;
-  }
-
-};
-
-
-AmigaKb amigakb;
-
-// the setup routine runs once when you press reset:
-void setup() {              
-  // initialize the digital pin as an output.
-  //Serial.begin(9600);
-  amigakb.init();
-  amigakb.red(true);
-  //Serial.println("started");
-  
-  Keyboard.begin();
-  
-}
-
-// following keycodes are missing from arduino library, but
+// following keycodes are missing from arduino library
 // Keyboard library maps USB HID usage codes to 136+<usage code>
 #define KEYCODE_OFFSET   136
 
@@ -194,116 +99,217 @@ void setup() {
 #define KEY_KP0         (KEYCODE_OFFSET+0x62)
 #define KEY_KPDOT       (KEYCODE_OFFSET+0x63)
 
-
+// mappings from amiga raw codes to arduino keyboard
+// library codes
 static char keycode[0x78] = {
-	[0]	 = '~', // grave
-	[1]	 = '1',
-	[2]	 = '2',
-	[3]	 = '3',
-	[4]	 = '4',
-	[5]	 = '5',
-	[6]	 = '6',
-	[7]	 = '7',
-	[8]	 = '8',
-	[9]	 = '9',
-	[10]	 = '0',
-	[11]	 = '-', // minus
-	[12]	 = '=', // equal
-	[13]	 = '\\', //KEY_BACKSLASH,
-        [14]     =  0,
-	[15]	 = KEY_KP0,
-	[16]	 = 'q',
-	[17]	 = 'w',
-	[18]	 = 'e',
-	[19]	 = 'r',
-	[20]	 = 't',
-	[21]	 = 'y',
-	[22]	 = 'u',
-	[23]	 = 'i',
-	[24]	 = 'o',
-	[25]	 = 'p',
-	[26]	 = '[', //KEY_LEFTBRACE,
-	[27]	 = ']', //KEY_RIGHTBRACE,
-        [28]     =  0,
-	[29]	 = KEY_KP1,
-	[30]	 = KEY_KP2,
-	[31]	 = KEY_KP3,
-	[32]	 = 'a',
-	[33]	 = 's',
-	[34]	 = 'd',
-	[35]	 = 'f',
-	[36]	 = 'g',
-	[37]	 = 'h',
-	[38]	 = 'j',
-	[39]	 = 'k',
-	[40]	 = 'l',
-	[41]	 = ';', //KEY_SEMICOLON,
-	[42]	 = '.', //KEY_APOSTROPHE,
-	[43]	 = '\\', //KEY_BACKSLASH,
-        [44]     =  0,
-	[45]	 = KEY_KP4,
-	[46]	 = KEY_KP5,
-	[47]	 = KEY_KP6,
-	[48]	 = '.', //KEY_102ND,
-	[49]	 = 'z',
-	[50]	 = 'x',
-	[51]	 = 'c',
-	[52]	 = 'v',
-	[53]	 = 'b',
-	[54]	 = 'n',
-	[55]	 = 'm',
-	[56]	 = ',', //KEY_COMMA,
-	[57]	 = '.', //KEY_DOT,
-	[58]	 = '/', //KEY_SLASH,
-        [59]     = 0,
-	[60]	 = KEY_KPDOT,
-	[61]	 = KEY_KP7,
-	[62]	 = KEY_KP8,
-	[63]	 = KEY_KP9,
-	[64]	 = ' ', //KEY_SPACE,
-	[65]	 = KEY_BACKSPACE,
-	[66]	 = KEY_TAB,
-	[67]	 = KEY_KPENTER,
-	[68]	 = KEY_RETURN, //KEY_ENTER,
-	[69]	 = KEY_ESC,
-	[70]	 = KEY_DELETE,
-        [71]     = 0,
-        [72]     = 0,
-        [73]     = 0,
-	[74]	 = KEY_KPMINUS,
-        [75]     = 0,
-	[76]	 = KEY_UP_ARROW, //KEY_UP,
-	[77]	 = KEY_DOWN_ARROW, //KEY_DOWN,
-	[78]	 = KEY_RIGHT_ARROW, //KEY_RIGHT,
-	[79]	 = KEY_LEFT_ARROW, //KEY_LEFT,
-	[80]	 = KEY_F1,
-	[81]	 = KEY_F2,
-	[82]	 = KEY_F3,
-	[83]	 = KEY_F4,
-	[84]	 = KEY_F5,
-	[85]	 = KEY_F6,
-	[86]	 = KEY_F7,
-	[87]	 = KEY_F8,
-	[88]	 = KEY_F9,
-	[89]	 = KEY_F10,
-	[90]	 = KEY_KPLEFTPAREN,
-	[91]	 = KEY_KPRIGHTPAREN,
-	[92]	 = KEY_KPSLASH,
-	[93]	 = KEY_KPASTERISK,
-	[94]	 = KEY_KPPLUS,
-	[95]	 = KEY_F11, //KEY_HELP,
-	[96]	 = KEY_LEFT_SHIFT,
-	[97]	 = KEY_RIGHT_SHIFT,
-	[98]	 = KEY_CAPS_LOCK,
-	[99]	 = KEY_LEFT_CTRL,
-	[100]	 = KEY_LEFT_ALT,
-	[101]	 = KEY_RIGHT_ALT,
-	[102]	 = KEY_LEFT_GUI, //KEY_LEFTMETA,
-	[103]	 = KEY_RIGHT_GUI, //KEY_RIGHTMETA
+  [0]    = '~', // grave
+  [1]    = '1',
+  [2]    = '2',
+  [3]    = '3',
+  [4]    = '4',
+  [5]    = '5',
+  [6]    = '6',
+  [7]    = '7',
+  [8]    = '8',
+  [9]    = '9',
+  [10]   = '0',
+  [11]   = '-', // minus
+  [12]   = '=', // equal
+  [13]   = '\\', //KEY_BACKSLASH,
+  [14]   =  0, // not a key
+  [15]   = KEY_KP0,
+  [16]   = 'q',
+  [17]   = 'w',
+  [18]   = 'e',
+  [19]   = 'r',
+  [20]   = 't',
+  [21]   = 'y',
+  [22]   = 'u',
+  [23]   = 'i',
+  [24]   = 'o',
+  [25]   = 'p',
+  [26]   = '[', //KEY_LEFTBRACE,
+  [27]   = ']', //KEY_RIGHTBRACE,
+  [28]   =  0,  // not a key
+  [29]   = KEY_KP1,
+  [30]   = KEY_KP2,
+  [31]   = KEY_KP3,
+  [32]   = 'a',
+  [33]   = 's',
+  [34]   = 'd',
+  [35]   = 'f',
+  [36]   = 'g',
+  [37]   = 'h',
+  [38]   = 'j',
+  [39]   = 'k',
+  [40]   = 'l',
+  [41]   = ';', //KEY_SEMICOLON,
+  [42]   = '.', //KEY_APOSTROPHE,
+  [43]   = '\\', //KEY_BACKSLASH,
+  [44]   =  0,  // not a key
+  [45]   = KEY_KP4,
+  [46]   = KEY_KP5,
+  [47]   = KEY_KP6,
+  [48]   = '.', //KEY_102ND,
+  [49]   = 'z',
+  [50]   = 'x',
+  [51]   = 'c',
+  [52]   = 'v',
+  [53]   = 'b',
+  [54]   = 'n',
+  [55]   = 'm',
+  [56]   = ',', //KEY_COMMA,
+  [57]   = '.', //KEY_DOT,
+  [58]   = '/', //KEY_SLASH,
+  [59]   = 0,  // not a key
+  [60]   = KEY_KPDOT,
+  [61]   = KEY_KP7,
+  [62]   = KEY_KP8,
+  [63]   = KEY_KP9,
+  [64]   = ' ', //KEY_SPACE,
+  [65]   = KEY_BACKSPACE,
+  [66]   = KEY_TAB,
+  [67]   = KEY_KPENTER,
+  [68]   = KEY_RETURN, //KEY_ENTER,
+  [69]   = KEY_ESC,
+  [70]   = KEY_DELETE,
+  [71]   = 0, // not a key
+  [72]   = 0, // not a key
+  [73]   = 0, // not a key
+  [74]   = KEY_KPMINUS,
+  [75]   = 0, // not a key
+  [76]   = KEY_UP_ARROW, //KEY_UP,
+  [77]   = KEY_DOWN_ARROW, //KEY_DOWN,
+  [78]   = KEY_RIGHT_ARROW, //KEY_RIGHT,
+  [79]   = KEY_LEFT_ARROW, //KEY_LEFT,
+  [80]   = KEY_F1,
+  [81]   = KEY_F2,
+  [82]   = KEY_F3,
+  [83]   = KEY_F4,
+  [84]   = KEY_F5,
+  [85]   = KEY_F6,
+  [86]   = KEY_F7,
+  [87]   = KEY_F8,
+  [88]   = KEY_F9,
+  [89]   = KEY_F10,
+  [90]   = KEY_KPLEFTPAREN,
+  [91]   = KEY_KPRIGHTPAREN,
+  [92]   = KEY_KPSLASH,
+  [93]   = KEY_KPASTERISK,
+  [94]   = KEY_KPPLUS,
+  [95]   = KEY_F11, //KEY_HELP,
+  [96]   = KEY_LEFT_SHIFT,
+  [97]   = KEY_RIGHT_SHIFT,
+  [98]   = KEY_CAPS_LOCK,
+  [99]   = KEY_LEFT_CTRL,
+  [100]  = KEY_LEFT_ALT,
+  [101]  = KEY_RIGHT_ALT,
+  [102]  = KEY_LEFT_GUI, //KEY_LEFTMETA,
+  [103]  = KEY_RIGHT_GUI, //KEY_RIGHTMETA
 };
 
-void sendkeyevent(int rawkey)
+
+class AmigaKb {
+
+  enum { HI = 1, LO = 0 };
+
+  byte klck;
+  byte kdata;
+  byte kbits;
+
+  byte get_klck()
+  {
+    // active high? seems like it is
+    return digitalRead(PIN_KLCK) ? HI : LO;
+  }
+  byte get_kdat()
+  {
+    // active low +5V == 0, 0V == 1
+    return digitalRead(PIN_KDAT) ? LO : HI;
+  }
+  void pulse_kdat()
+  {
+    // pulse low +5V at least for 85 micros
+    pinMode(PIN_KDAT, OUTPUT);
+    digitalWrite(PIN_KDAT, HIGH);
+    delayMicroseconds(150);
+    digitalWrite(PIN_KDAT, LOW);
+    pinMode(PIN_KDAT, INPUT_PULLUP);
+  }
+
+  void sendkeyevent(int rawkey);
+
+public:
+
+  void green(bool state)
+  {
+    digitalWrite(LED_GREEN, state ? HIGH : LOW);
+  }
+  void red(bool state)
+  {
+    digitalWrite(LED_RED, state ? HIGH : LOW);
+  }
+
+  // call this in setup()
+  void init();
+
+  // call this in loop(), returns raw keycode or -1 if no key was read
+  int pollkey();
+
+  // call this in loop() it will poll amiga keyboard and
+  // send USB keypress/releases
+  void pollAndSendUSBevent() {
+    sendkeyevent(pollkey());
+  }
+
+};
+
+// call this in setup()
+void AmigaKb::init()
 {
+  klck = HI;
+  kdata = 0;
+  kbits = 0;
+  pinMode(PIN_KLCK, INPUT_PULLUP);
+  pinMode(PIN_KDAT, INPUT_PULLUP);
+  pinMode(LED_RED,   OUTPUT);
+  pinMode(LED_GREEN, OUTPUT);
+  Keyboard.begin();
+}
+
+// call this in loop(), returns raw keycode or -1 if no key was read
+int AmigaKb::pollkey()
+{
+  static const byte bitorder[] = { 6,5,4,3,2,1,0,7 };
+  int rawkey = -1;
+
+  byte k = get_klck();
+  // only react if clock changes
+  if ( k != klck ) {
+    klck = k;
+    // HI --> LO
+    if ( klck == LO && kbits <= 7 ) {
+      //Serial.print('*');
+      kdata |= (get_kdat()<<bitorder[kbits]);
+      kbits++;
+    // LO --> HI
+    } else if ( klck == HI && kbits > 7 ) {
+      //Serial.print('+');
+      rawkey = kdata;
+      kbits = 0;
+      kdata = 0;
+      pulse_kdat();
+    }
+  }
+  return rawkey;
+}
+
+void AmigaKb::sendkeyevent(int rawkey)
+{
+  // no keys
+  if (rawkey == -1)
+    return;
+
   // special out of sync code
   if (rawkey == 0xF9) {
     Keyboard.releaseAll();
@@ -311,11 +317,11 @@ void sendkeyevent(int rawkey)
   }
 
   byte code = 0x7f & rawkey;
-  // out of range 
+  // out of range
   if (code >= sizeof(keycode)/sizeof(keycode[0]))
     return;
-  // translate from amiga raw key codes  
-  code = keycode[code]; 
+  // translate from amiga raw key codes
+  code = keycode[code];
 
   // no mapping from amiga codes..
   if (code == 0)
@@ -325,24 +331,27 @@ void sendkeyevent(int rawkey)
   if (code == KEY_CAPS_LOCK) {
     Keyboard.press(code);
     Keyboard.release(code);
-    return;    
+    return;
   }
-
 
   if (rawkey & 0x80)
     Keyboard.release(code);
   else
-    Keyboard.press(code);   
-
+    Keyboard.press(code);
 }
 
 
+// ---------------------------------------------------
+
+AmigaKb amigakb;
+
+// the setup routine runs once when you press reset:
+void setup() {
+  amigakb.init();
+  amigakb.red(true);
+}
+
 // the loop routine runs over and over again forever:
 void loop() {
-  
-  int rawkey = amigakb.pollkey();
-  if (rawkey != -1) {
-    sendkeyevent(rawkey);    
-  }
-
+  amigakb.pollAndSendUSBevent();
 }
