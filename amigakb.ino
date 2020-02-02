@@ -21,6 +21,7 @@ and a delay to make the Caps Lock on Amiga keyboards compatible with Mac.
 */
 
 /*
+
 For protocol spec see:
 http://amigadev.elowar.com/read/ADCD_2.1/Hardware_Manual_guide/node0173.html
 
@@ -155,21 +156,22 @@ again.  The processor waits another 20 microseconds before changing KDAT.
 // 9 Button2  16       PB2
 
 
-#include <Keyboard.h>
+//#include <Keyboard.h>
 
 // arduino pin mappings
 #define LED_GREEN 6 // 'in use' violet
 #define LED_RED   7 // 'status' blue
 #define PIN_KLCK  8  // black
 #define PIN_KDAT  9  // brown
+#define PIN_KBRST 10 // red
 
 
 // following keycodes are missing from arduino library
 // Keyboard library maps USB HID usage codes to 136+<usage code>
 #define KEYCODE_OFFSET   136
 
-#define KEY_KPRIGHTPAREN (KEYCODE_OFFSET+0x47) // scrolllock
-#define KEY_KPLEFTPAREN  (KEYCODE_OFFSET+0x53) // numlock
+#define KEY_KPRIGHTPAREN (KEYCODE_OFFSET+0x47) // scrolllock  // Does currently not seem to be mapped in V4
+#define KEY_KPLEFTPAREN  (KEYCODE_OFFSET+0x53) // numlock     // Does currently not seem to be mapped in V4
 #define KEY_KPSLASH     (KEYCODE_OFFSET+0x54)
 #define KEY_KPASTERISK  (KEYCODE_OFFSET+0x55)
 #define KEY_KPMINUS     (KEYCODE_OFFSET+0x56)
@@ -188,6 +190,7 @@ again.  The processor waits another 20 microseconds before changing KDAT.
 #define KEY_KPDOT       (KEYCODE_OFFSET+0x63)
 #define KEY_TOPLEFT     (KEYCODE_OFFSET+0x35)
 #define KEY_ISOLEFT     (KEYCODE_OFFSET+0x64)
+#define KEY_NON_US_HASH (KEYCODE_OFFSET+0x32)
 
 // mappings from amiga raw codes to arduino keyboard
 // library codes
@@ -205,7 +208,7 @@ static char keycode[0x78] = {
   [10]   = '0',
   [11]   = '-', // minus
   [12]   = '=', // equal
-  [13]   = KEY_F11, //KEY_BACKSLASH,
+  [13]   = '\\', //KEY_BACKSLASH,
   [14]   =  0, // not a key
   [15]   = KEY_KP0,
   [16]   = 'q',
@@ -235,7 +238,7 @@ static char keycode[0x78] = {
   [40]   = 'l',
   [41]   = ';', //KEY_SEMICOLON,
   [42]   = '\'', //KEY_APOSTROPHE,
-  [43]   = '\\', //KEY_BACKSLASH,
+  [43]   = KEY_NON_US_HASH, //KEY_BACKSLASH,
   [44]   =  0,  // not a key
   [45]   = KEY_KP4,
   [46]   = KEY_KP5,
@@ -287,7 +290,7 @@ static char keycode[0x78] = {
   [92]   = KEY_KPSLASH,
   [93]   = KEY_KPASTERISK,
   [94]   = KEY_KPPLUS,
-  [95]   = KEY_F12, //KEY_HELP,
+  [95]   = KEY_PAGE_UP, //KEY_HELP,
   [96]   = KEY_LEFT_SHIFT,
   [97]   = KEY_RIGHT_SHIFT,
   [98]   = KEY_CAPS_LOCK,
@@ -362,6 +365,7 @@ void AmigaKb::init()
   kbits = 0;
   pinMode(PIN_KLCK, INPUT_PULLUP);
   pinMode(PIN_KDAT, INPUT_PULLUP);
+  pinMode(PIN_KBRST, INPUT_PULLUP);
   pinMode(LED_RED,   OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
   Keyboard.begin();
@@ -406,6 +410,15 @@ void AmigaKb::sendkeyevent(int rawkey)
     return;
   }
 
+  // keyboard reset (without reset line)
+  if (rawkey == 0xFE) {
+    Keyboard.press(KEY_LEFT_CTRL);
+    Keyboard.press(KEY_LEFT_GUI);
+    Keyboard.press(KEY_RIGHT_GUI);
+    Keyboard.releaseAll();
+    return;
+  }
+
   byte code = 0x7f & rawkey;
   // out of range
   if (code >= sizeof(keycode)/sizeof(keycode[0]))
@@ -418,12 +431,17 @@ void AmigaKb::sendkeyevent(int rawkey)
     return;
 
   // caps lock handling
+  // Vampire wants a keypress and release event for enabling/disabling caps lock
+  // (instead a press/release pair for each)
+  // => just pass through caps lock like very other key
+/*
   if (code == KEY_CAPS_LOCK) {
     Keyboard.press(code);
     delay(300); // Mac OS-X will not recognize a very short Caps Lock press
     Keyboard.release(code);
     return;
   }
+*/
 
   if (rawkey & 0x80)
     Keyboard.release(code);
