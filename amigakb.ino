@@ -16,7 +16,11 @@
 */
 
 /*
+During 2019, Yann Serra added RJ45 colors to A1000 connection diagram,
+and a delay to make the Caps Lock on Amiga keyboards compatible with Mac.
+*/
 
+/*
 For protocol spec see:
 http://amigadev.elowar.com/read/ADCD_2.1/Hardware_Manual_guide/node0173.html
 
@@ -55,19 +59,103 @@ The KDAT line is active low; that is, a high level (+5V) is interpreted as
 The keyboard processor sets the KDAT line about 20 microseconds before it
 pulls KCLK low.  KCLK stays low for about 20 microseconds, then goes high
 again.  The processor waits another 20 microseconds before changing KDAT.
-
-
-keyboard connector:
-KLCK    <--black------ 0
-KDAT    <--brown------ 1
-KBRESET <--red-------- 2 (resets amiga)
-+5V     <--orange------3
-KEY     <--yellow------4 (not used)
-GROUND  <--green-------5
-STATUS  <--blue--------6 (disk drive led)
-INUSE   <--violet------7 (power led)
-
 */
+
+// Connection diagrams for various keyboard models:
+// ------------------------------------------------
+//
+// A500 ----------------
+// Keyboard   Leonardo
+// Connector  IO
+// 1 KBCLK    8
+// 2 KBDATA   9
+// 3 KBRST    10 (not used in this version)
+// 4 5v       VCC (5V)
+// 5 NC       -
+// 6 GND      GND
+// 7 LED1     VCC (5V)
+// 8 LED2     -
+//
+// A1000 ---------------
+// Keyboard   Leonardo
+// Connector  IO
+// 1 5V       VCC (5V)  (RJ45: White+Green)
+// 2 KBCLK    8         (RJ45: Blue)
+// 3 KBDATA   9         (RJ45: Blue+White)
+// 4 GND      GND       (RJ45: Green)
+// 5 NC       -
+//
+// A2000/A3000 ---------
+// Keyboard   Leonardo
+// Connector  IO
+// 1 KBCLK    8
+// 2 KBDATA   9
+// 3 NC       -
+// 4 GND      GND
+// 5 5V       VCC (5V)
+//
+// A4000/CD32 ----------
+// Keyboard   Leonardo
+// Connector  IO
+// 1 KBDATA   9
+// 2 TXD *    -
+// 3 GND      GND
+// 4 5V       VCC (5V)
+// 5 KBCLK    8
+// 6 RXD *    -
+// *) NC on A4000
+//
+// CDTV ----------------
+// Keyboard   Leonardo
+// Connector  IO
+// 1 GND      GND
+// 2 KBDATA   9
+// 3 KBCLOCK  8
+// 4 5V       VCC (5V)
+// 5 KBSENSE  -
+//
+//
+// Connection diagrams for joysticks:
+// ------------------------------------------------
+//
+// JOYSTICK1 (Leonardo/Pro Micro)
+// DB9        Arduino
+// 1 Up       1 (TXD)  PD3
+// 2 Down     0 (RXD)  PD2
+// 3 Left     2        PD1
+// 4 Right    3        PD0
+// 5 Pot      -
+// 6 Button1  4        PD4
+// 7 5V       VCC (5V)
+// 8 GND      GND
+// 9 Button2  6        PD7
+//
+// JOYSTICK2 (Leonardo)
+// DB9        Arduino
+// 1 Up       A0       PF7
+// 2 Down     A1       PF6
+// 3 Left     A2       PF5
+// 4 Right    A3       PF4
+// 5 Pot      -
+// 6 Button1  A4
+// 7 5V       VCC (5V)
+// 8 GND      GND
+// 9 Button2  A5
+//
+// JOYSTICK2 (Pro Micro)
+// DB9        Arduino
+// 1 Up       A0       PF7
+// 2 Down     A1       PF6
+// 3 Left     A2       PF5
+// 4 Right    A3       PF4
+// 5 Pot      -a
+// 6 Button1  15       PB1
+// 7 5V       VCC (5V)
+// 8 GND      GND
+// 9 Button2  16       PB2
+
+
+#include <Keyboard.h>
 
 // arduino pin mappings
 #define LED_GREEN 6 // 'in use' violet
@@ -98,11 +186,13 @@ INUSE   <--violet------7 (power led)
 #define KEY_KP9         (KEYCODE_OFFSET+0x61)
 #define KEY_KP0         (KEYCODE_OFFSET+0x62)
 #define KEY_KPDOT       (KEYCODE_OFFSET+0x63)
+#define KEY_TOPLEFT     (KEYCODE_OFFSET+0x35)
+#define KEY_ISOLEFT     (KEYCODE_OFFSET+0x64)
 
 // mappings from amiga raw codes to arduino keyboard
 // library codes
 static char keycode[0x78] = {
-  [0]    = '~', // grave
+  [0]    = KEY_TOPLEFT, // grave
   [1]    = '1',
   [2]    = '2',
   [3]    = '3',
@@ -115,7 +205,7 @@ static char keycode[0x78] = {
   [10]   = '0',
   [11]   = '-', // minus
   [12]   = '=', // equal
-  [13]   = '\\', //KEY_BACKSLASH,
+  [13]   = KEY_F11, //KEY_BACKSLASH,
   [14]   =  0, // not a key
   [15]   = KEY_KP0,
   [16]   = 'q',
@@ -144,13 +234,13 @@ static char keycode[0x78] = {
   [39]   = 'k',
   [40]   = 'l',
   [41]   = ';', //KEY_SEMICOLON,
-  [42]   = '.', //KEY_APOSTROPHE,
+  [42]   = '\'', //KEY_APOSTROPHE,
   [43]   = '\\', //KEY_BACKSLASH,
   [44]   =  0,  // not a key
   [45]   = KEY_KP4,
   [46]   = KEY_KP5,
   [47]   = KEY_KP6,
-  [48]   = '.', //KEY_102ND,
+  [48]   = KEY_ISOLEFT, //KEY_102ND,
   [49]   = 'z',
   [50]   = 'x',
   [51]   = 'c',
@@ -197,7 +287,7 @@ static char keycode[0x78] = {
   [92]   = KEY_KPSLASH,
   [93]   = KEY_KPASTERISK,
   [94]   = KEY_KPPLUS,
-  [95]   = KEY_F11, //KEY_HELP,
+  [95]   = KEY_F12, //KEY_HELP,
   [96]   = KEY_LEFT_SHIFT,
   [97]   = KEY_RIGHT_SHIFT,
   [98]   = KEY_CAPS_LOCK,
@@ -330,6 +420,7 @@ void AmigaKb::sendkeyevent(int rawkey)
   // caps lock handling
   if (code == KEY_CAPS_LOCK) {
     Keyboard.press(code);
+    delay(300); // Mac OS-X will not recognize a very short Caps Lock press
     Keyboard.release(code);
     return;
   }
