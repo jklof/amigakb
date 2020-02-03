@@ -155,8 +155,9 @@ again.  The processor waits another 20 microseconds before changing KDAT.
 // 8 GND      GND
 // 9 Button2  16       PB2
 
-
-//#include <Keyboard.h>
+#if ARDUINO > 10605
+#include <Keyboard.h>
+#endif
 
 // arduino pin mappings
 #define LED_GREEN 6 // 'in use' violet
@@ -194,7 +195,7 @@ again.  The processor waits another 20 microseconds before changing KDAT.
 
 // mappings from amiga raw codes to arduino keyboard
 // library codes
-static char keycode[0x78] = {
+static uint8_t keycode[0x78] = {
   [0]    = KEY_TOPLEFT, // grave
   [1]    = '1',
   [2]    = '2',
