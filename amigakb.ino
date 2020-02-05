@@ -160,6 +160,8 @@ again.  The processor waits another 20 microseconds before changing KDAT.
 #endif
 
 // arduino pin mappings
+#define JUMPER_CAPS 2
+
 #define LED_GREEN 6 // 'in use' violet
 #define LED_RED   7 // 'status' blue
 #define PIN_KLCK  8  // black
@@ -331,6 +333,10 @@ class AmigaKb {
     pinMode(PIN_KDAT, INPUT_PULLUP);
   }
 
+  bool useCapsKeySpecialHandling() {
+    return !digitalRead(JUMPER_CAPS); // jumper on input pin 2 (pull-up -> connect to gnd)
+  }
+
   void sendkeyevent(int rawkey);
 
 public:
@@ -364,6 +370,7 @@ void AmigaKb::init()
   klck = HI;
   kdata = 0;
   kbits = 0;
+  pinMode(JUMPER_CAPS, INPUT_PULLUP);
   pinMode(PIN_KLCK, INPUT_PULLUP);
   pinMode(PIN_KDAT, INPUT_PULLUP);
   pinMode(PIN_KBRST, INPUT_PULLUP);
@@ -433,16 +440,14 @@ void AmigaKb::sendkeyevent(int rawkey)
 
   // caps lock handling
   // Vampire wants a keypress and release event for enabling/disabling caps lock
-  // (instead a press/release pair for each)
-  // => just pass through caps lock like very other key
-/*
-  if (code == KEY_CAPS_LOCK) {
+  // (instead a press/release pair for each, as usual for USB keyboards)
+  // => make this configurable via a jumper
+  if (code == KEY_CAPS_LOCK && useCapsKeySpecialHandling()) {
     Keyboard.press(code);
     delay(300); // Mac OS-X will not recognize a very short Caps Lock press
     Keyboard.release(code);
     return;
   }
-*/
 
   if (rawkey & 0x80)
     Keyboard.release(code);

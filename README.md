@@ -20,7 +20,8 @@ Changes:
 - Merged in changes from https://forum.arduino.cc/index.php?topic=139358.90
 - Changed Backslash, Hash and Help key mappings
 - Added reset handling for keyboards without reset line (All supported except A500 keyboard)
-- Removed caps lock special handling (for compensating differences between Amiga and USB keyboard protocols)
+- Made use of the caps lock special handling (for compensating differences between Amiga and USB keyboard protocols)
+  configurable via a jumper (V4 expects key events differently than usual for USB keyboards)
 
 Building for V4-SA:
 - Use Ardoino IDE v1.6.5-r5 (needed for the changes below - the last version before a refactoring of the USB stack)
@@ -30,4 +31,3 @@ Building for V4-SA:
 TODO:
 - Add reset handling for A500 keyboard (i.e. keyboard with reset line)
 - Fix mapping of numpad '(' and ')' keys (Amiga keycodes 0x5a, and 0x5b) (these seem currently not to be available on V4)
-- Maybe adjust the caps lock behavior in case the handling in V4 will change.
