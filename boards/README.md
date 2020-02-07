@@ -3,7 +3,7 @@ This directory contains boards (as EAGLE CAD files) that can be used in combinat
 **DISCLAIMER: I have not yet verified these boards (I'm still waiting for my order). Use at your own risk!**
 
 They allow to create a DIY adapter which requires three things:
-* A "Pro Micro" Arduino clone
+* A "Pro Micro" Arduino clone (5 Volt version)
 
 ![Pro Micro](img/pro_micro.jpg)
 
