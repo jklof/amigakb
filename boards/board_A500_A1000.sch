@@ -521,8 +521,8 @@ http://www.tycoelectronics.com</description>
 <pad name="2" x="-6.35" y="-1.27" drill="0.8"/>
 <text x="-7.62" y="6.35" size="1.27" layer="25">&gt;NAME</text>
 <text x="-7.62" y="-8.89" size="1.27" layer="27">&gt;VALUE</text>
-<hole x="2.54" y="-5.715" drill="3.25"/>
-<hole x="2.54" y="4.445" drill="3.25"/>
+<hole x="2.54" y="-4.445" drill="3.25"/>
+<hole x="2.54" y="3.175" drill="3.25"/>
 </package>
 </packages>
 <symbols>

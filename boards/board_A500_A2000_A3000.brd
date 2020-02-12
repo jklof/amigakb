@@ -314,6 +314,8 @@ Audio, scart, microphone, headphone&lt;p&gt;
 <rectangle x1="-8.001" y1="4.572" x2="-3.175" y2="5.588" layer="51"/>
 <hole x="7.62" y="0" drill="2.794"/>
 <hole x="-7.62" y="0" drill="2.794"/>
+<pad name="PE1" x="-5.08" y="-5.08" drill="1.3208" shape="octagon"/>
+<pad name="PE@1" x="5.08" y="-5.08" drill="1.3208" shape="octagon"/>
 </package>
 </packages>
 <packages3d>
