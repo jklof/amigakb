@@ -168,6 +168,8 @@ again.  The processor waits another 20 microseconds before changing KDAT.
 #define PIN_KDAT  9  // brown
 #define PIN_KBRST 10 // red
 
+#define BITMASK_KLCK 0b00010000
+#define BITMASK_KDAT 0b00100000
 
 // following keycodes are missing from arduino library
 // Keyboard library maps USB HID usage codes to 136+<usage code>
@@ -312,27 +314,33 @@ class AmigaKb {
   byte klck;
   byte kdata;
   byte kbits;
+  bool pulse_started;
 
   byte get_klck()
   {
     // active high? seems like it is
-    return digitalRead(PIN_KLCK) ? HI : LO;
+//    return digitalRead(PIN_KLCK) ? HI : LO;
+    return (PINB & BITMASK_KLCK) ? HI : LO;
   }
   byte get_kdat()
   {
     // active low +5V == 0, 0V == 1
-    return digitalRead(PIN_KDAT) ? LO : HI;
+//    return digitalRead(PIN_KDAT) ? LO : HI;
+    return (PINB & BITMASK_KDAT) ? LO : HI;
   }
-  void pulse_kdat()
+  void pulse_kdat_start()
   {
-    // pulse low +5V at least for 85 micros
+    // pulse low at least for 85 micros
     pinMode(PIN_KDAT, OUTPUT);
-    digitalWrite(PIN_KDAT, HIGH);
-    delayMicroseconds(150);
     digitalWrite(PIN_KDAT, LOW);
-    pinMode(PIN_KDAT, INPUT_PULLUP);
+    pulse_started = true;
   }
-
+  void pulse_kdat_end()
+  {
+    delayMicroseconds(100);
+    pinMode(PIN_KDAT, INPUT_PULLUP);
+    pulse_started = false;
+  }
   bool useCapsKeySpecialHandling() {
     return !digitalRead(JUMPER_CAPS); // jumper on input pin 2 (pull-up -> connect to gnd)
   }
@@ -360,6 +368,8 @@ public:
   // send USB keypress/releases
   void pollAndSendUSBevent() {
     sendkeyevent(pollkey());
+    if (pulse_started)
+      pulse_kdat_end();
   }
 
 };
@@ -400,7 +410,7 @@ int AmigaKb::pollkey()
       rawkey = kdata;
       kbits = 0;
       kdata = 0;
-      pulse_kdat();
+      pulse_kdat_start();
     }
   }
   return rawkey;
@@ -444,7 +454,7 @@ void AmigaKb::sendkeyevent(int rawkey)
   // => make this configurable via a jumper
   if (code == KEY_CAPS_LOCK && useCapsKeySpecialHandling()) {
     Keyboard.press(code);
-    delay(300); // Mac OS-X will not recognize a very short Caps Lock press
+    delayMicroseconds(100); // Mac OS-X will not recognize a very short Caps Lock press
     Keyboard.release(code);
     return;
   }

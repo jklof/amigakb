@@ -22,6 +22,10 @@ Changes:
 - Added reset handling for keyboards without reset line (All supported except A500 keyboard)
 - Made use of the caps lock special handling (for compensating differences between Amiga and USB keyboard protocols)
   configurable via a jumper (V4 expects key events differently than usual for USB keyboards)
+  This can be switched with a jumper between pin 2 and ground.
+- replaced digitalRead() with direct register usage to meet timing requirements for early A1000 keyboards
+- changed handshake to work with early A1000 keyboards
+- send data via USB during handshake pulse, in order to not miss next key event
 
 Building for V4-SA:
 - Use Ardoino IDE v1.6.5-r5 (needed for the changes below - the last version before a refactoring of the USB stack)
