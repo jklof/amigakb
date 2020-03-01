@@ -1,6 +1,6 @@
-This directory contains boards (as EAGLE CAD files) that can be used in combination with the code in this repository.
+This directory contains boards (as EAGLE CAD files) that can be used in combination with the [code in this repository](..).
 
-**DISCLAIMER: I have not yet verified these boards (I'm still waiting for my order). Use at your own risk!**
+![Boards](img/boards.jpg)
 
 They allow to create a DIY adapter which requires three things:
 * A "Pro Micro" Arduino clone (5 Volt version)
@@ -34,4 +34,10 @@ They allow to create a DIY adapter which requires three things:
 
 
 
-To build one of these just solder the "Pro Micro" board and the socket or pin header on the adaptor board, and flash the software.
+To build one of these just solder the "Pro Micro" board and the socket or pin header on the adaptor board, and flash the [software](..).
+
+
+
+***DISCLAIMER:***
+
+This hardware/software is provided "as is", and you use the hardware/software at your own risk. Under no circumstances shall any author be liable for direct, indirect, special, incidental, or consequential damages resulting from the use, misuse, or inability to use this hardware/software, even if the authors have been advised of the possibility of such damages.
