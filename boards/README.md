@@ -8,10 +8,10 @@ They allow to create a DIY adapter which requires three things:
 ![Pro Micro](img/pro_micro.jpg)
 
 * One of the adaptor boards fitting to the keyboard you want to use (the A500 pin header can be used on any of the boards)
-  * A1000
-  * A2000 / A3000
-  * A4000 / CD32
-  * CDTV
+  * A1000 ([pcbway link](https://www.pcbway.com/project/shareproject/Amiga_1000___500_Keyboard_USB_adapter.html))
+  * A2000 / A3000 ([pcbway link](https://www.pcbway.com/project/shareproject/Amiga_2000___3000___500_Keyboard_USB_adapter.html))
+  * A4000 / CD32 ([pcbway link](https://www.pcbway.com/project/shareproject/Amiga_4000___CD32___500_Keyboard_USB_adapter.html))
+  * CDTV ([pcbway link](https://www.pcbway.com/project/shareproject/Amiga_CDTV___500_Keyboard_USB_adapter.html))
 
 ![A500/A1000 board](img/board_A500_A1000.png)
 ![A500/A2000/A3000 board](img/board_A500_A2000_A3000.png)
