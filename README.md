@@ -27,6 +27,7 @@ Changes to the original code:
 - replaced digitalRead() with direct register usage to meet timing requirements for early A1000 keyboards
 - changed handshake to work with early A1000 keyboards
 - send data via USB during handshake pulse, in order to not miss next key event
+- Added option to use a switch between pin 4 and ground to select an alternative keymap in order to make codes of keys available that do not exist on the amiga keyboard (currently only used for providing F11 and F12 (which are used by V4SA to toggle options) on F1 and F2)
 
 Building for V4-SA:
 - Use Arduino IDE v1.6.5-r5 (needed for the changes below - the last version before a refactoring of the USB stack)
@@ -36,6 +37,5 @@ Building for V4-SA:
 TODO:
 - Add reset handling for A500 keyboard (i.e. keyboard with reset line) (optional as the current reset handling also is sufficient for A500 keyboards)
 - Fix mapping of numpad '(' and ')' keys (Amiga keycodes 0x5a, and 0x5b) (these seem currently not to be available on V4)
-- Make some extra keys (e.g. F11 and F12) available as buttons on digital-in pins (in order to use extra functionality mapped to them)
 - A500 keyboard: make LEDs controllable via USB (i.e. switch drive led on/off, switch power led bright/dim)
 - Create a 3D printable case for the boards

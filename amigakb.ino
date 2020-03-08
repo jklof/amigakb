@@ -161,6 +161,7 @@ again.  The processor waits another 20 microseconds before changing KDAT.
 
 // arduino pin mappings
 #define JUMPER_CAPS 2
+#define SWITCH_ALT_KEYMAP 4
 
 #define LED_GREEN 6 // 'in use' violet
 #define LED_RED   7 // 'status' blue
@@ -199,7 +200,7 @@ again.  The processor waits another 20 microseconds before changing KDAT.
 
 // mappings from amiga raw codes to arduino keyboard
 // library codes
-static uint8_t keycode[0x78] = {
+static uint8_t keycode[2][0x78] = {{ // normal keymap
   [0]    = KEY_TOPLEFT, // grave
   [1]    = '1',
   [2]    = '2',
@@ -304,7 +305,112 @@ static uint8_t keycode[0x78] = {
   [101]  = KEY_RIGHT_ALT,
   [102]  = KEY_LEFT_GUI, //KEY_LEFTMETA,
   [103]  = KEY_RIGHT_GUI, //KEY_RIGHTMETA
-};
+}, { // alternative keymap
+  [0]    = KEY_TOPLEFT, // grave
+  [1]    = '1',
+  [2]    = '2',
+  [3]    = '3',
+  [4]    = '4',
+  [5]    = '5',
+  [6]    = '6',
+  [7]    = '7',
+  [8]    = '8',
+  [9]    = '9',
+  [10]   = '0',
+  [11]   = '-', // minus
+  [12]   = '=', // equal
+  [13]   = '\\', //KEY_BACKSLASH,
+  [14]   =  0, // not a key
+  [15]   = KEY_KP0,
+  [16]   = 'q',
+  [17]   = 'w',
+  [18]   = 'e',
+  [19]   = 'r',
+  [20]   = 't',
+  [21]   = 'y',
+  [22]   = 'u',
+  [23]   = 'i',
+  [24]   = 'o',
+  [25]   = 'p',
+  [26]   = '[', //KEY_LEFTBRACE,
+  [27]   = ']', //KEY_RIGHTBRACE,
+  [28]   =  0,  // not a key
+  [29]   = KEY_KP1,
+  [30]   = KEY_KP2,
+  [31]   = KEY_KP3,
+  [32]   = 'a',
+  [33]   = 's',
+  [34]   = 'd',
+  [35]   = 'f',
+  [36]   = 'g',
+  [37]   = 'h',
+  [38]   = 'j',
+  [39]   = 'k',
+  [40]   = 'l',
+  [41]   = ';', //KEY_SEMICOLON,
+  [42]   = '\'', //KEY_APOSTROPHE,
+  [43]   = KEY_NON_US_HASH, //KEY_BACKSLASH,
+  [44]   =  0,  // not a key
+  [45]   = KEY_KP4,
+  [46]   = KEY_KP5,
+  [47]   = KEY_KP6,
+  [48]   = KEY_ISOLEFT, //KEY_102ND,
+  [49]   = 'z',
+  [50]   = 'x',
+  [51]   = 'c',
+  [52]   = 'v',
+  [53]   = 'b',
+  [54]   = 'n',
+  [55]   = 'm',
+  [56]   = ',', //KEY_COMMA,
+  [57]   = '.', //KEY_DOT,
+  [58]   = '/', //KEY_SLASH,
+  [59]   = 0,  // not a key
+  [60]   = KEY_KPDOT,
+  [61]   = KEY_KP7,
+  [62]   = KEY_KP8,
+  [63]   = KEY_KP9,
+  [64]   = ' ', //KEY_SPACE,
+  [65]   = KEY_BACKSPACE,
+  [66]   = KEY_TAB,
+  [67]   = KEY_KPENTER,
+  [68]   = KEY_RETURN, //KEY_ENTER,
+  [69]   = KEY_ESC,
+  [70]   = KEY_DELETE,
+  [71]   = 0, // not a key
+  [72]   = 0, // not a key
+  [73]   = 0, // not a key
+  [74]   = KEY_KPMINUS,
+  [75]   = 0, // not a key
+  [76]   = KEY_UP_ARROW, //KEY_UP,
+  [77]   = KEY_DOWN_ARROW, //KEY_DOWN,
+  [78]   = KEY_RIGHT_ARROW, //KEY_RIGHT,
+  [79]   = KEY_LEFT_ARROW, //KEY_LEFT,
+  [80]   = KEY_F11,
+  [81]   = KEY_F12,
+  [82]   = KEY_F3,
+  [83]   = KEY_F4,
+  [84]   = KEY_F5,
+  [85]   = KEY_F6,
+  [86]   = KEY_F7,
+  [87]   = KEY_F8,
+  [88]   = KEY_F9,
+  [89]   = KEY_F10,
+  [90]   = KEY_KPLEFTPAREN,
+  [91]   = KEY_KPRIGHTPAREN,
+  [92]   = KEY_KPSLASH,
+  [93]   = KEY_KPASTERISK,
+  [94]   = KEY_KPPLUS,
+  [95]   = KEY_PAGE_UP, //KEY_HELP,
+  [96]   = KEY_LEFT_SHIFT,
+  [97]   = KEY_RIGHT_SHIFT,
+  [98]   = KEY_CAPS_LOCK,
+  [99]   = KEY_LEFT_CTRL,
+  [100]  = KEY_LEFT_ALT,
+  [101]  = KEY_RIGHT_ALT,
+  [102]  = KEY_LEFT_GUI, //KEY_LEFTMETA,
+  [103]  = KEY_RIGHT_GUI, //KEY_RIGHTMETA
+}};
 
 
 class AmigaKb {
@@ -344,6 +450,9 @@ class AmigaKb {
   bool useCapsKeySpecialHandling() {
     return !digitalRead(JUMPER_CAPS); // jumper on input pin 2 (pull-up -> connect to gnd)
   }
+  bool useAlternativeKeymap() {
+    return !digitalRead(SWITCH_ALT_KEYMAP); // switch on input pin 4 (pull-up -> connect to gnd)
+  }
 
   void sendkeyevent(int rawkey);
 
@@ -381,6 +490,7 @@ void AmigaKb::init()
   kdata = 0;
   kbits = 0;
   pinMode(JUMPER_CAPS, INPUT_PULLUP);
+  pinMode(SWITCH_ALT_KEYMAP, INPUT_PULLUP);
   pinMode(PIN_KLCK, INPUT_PULLUP);
   pinMode(PIN_KDAT, INPUT_PULLUP);
   pinMode(PIN_KBRST, INPUT_PULLUP);
@@ -438,11 +548,12 @@ void AmigaKb::sendkeyevent(int rawkey)
   }
 
   byte code = 0x7f & rawkey;
+  int table = useAlternativeKeymap() ? 1 : 0;
   // out of range
-  if (code >= sizeof(keycode)/sizeof(keycode[0]))
+  if (code >= sizeof(keycode[table])/sizeof(keycode[table][0]))
     return;
   // translate from amiga raw key codes
-  code = keycode[code];
+  code = keycode[table][code];
 
   // no mapping from amiga codes..
   if (code == 0)
@@ -480,3 +591,4 @@ void setup() {
 void loop() {
   amigakb.pollAndSendUSBevent();
 }
+

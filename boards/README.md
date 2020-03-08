@@ -34,7 +34,7 @@ They allow to create a DIY adapter which requires three things:
 
 
 
-To build one of these just solder the "Pro Micro" board and the socket or pin header on the adaptor board, and flash the [software](..).
+To build one of these just solder the "Pro Micro" board and the socket or pin header on the adaptor board, create a solder bridge on J1 of the "Pro Micro", and flash the [software](..).
 
 
 
