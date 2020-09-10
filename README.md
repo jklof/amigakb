@@ -16,6 +16,7 @@ This should work with all Amiga keyboards that have their own controller (i.e. a
 - CDTV
 
 The repository also contains [schematics and premade board files](boards) for building a "Pro Micro" based adapter that runs this code.
+3D printable cases for the boards can be found at https://www.thingiverse.com/thing:4593520
 
 Changes to the original code:
 - Merged in changes from https://forum.arduino.cc/index.php?topic=139358.90
@@ -38,4 +39,3 @@ TODO:
 - Add reset handling for A500 keyboard (i.e. keyboard with reset line) (optional as the current reset handling also is sufficient for A500 keyboards)
 - Fix mapping of numpad '(' and ')' keys (Amiga keycodes 0x5a, and 0x5b) (these seem currently not to be available on V4)
 - A500 keyboard: make LEDs controllable via USB (i.e. switch drive led on/off, switch power led bright/dim)
-- Create a 3D printable case for the boards
