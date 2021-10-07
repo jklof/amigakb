@@ -37,7 +37,7 @@ Building for V4-SA:
   it will certainly be caused by this.  To resolve the issue, on Windows, search in your c:\Users\<UserName>\AppData directory
   for a directory called "Arduino15" and delete it.  There will probably be one in AppData\Local and one in AppData\Roaming.
   You might have to repeat this process to switch back to the newer Arduino IDE version.  On MacOS the directory can be found in
-  ~/Library/Arduino15 and on Linux it would be somewhere in ~ (not checked)
+  ~/Library/Arduino15 and on Linux it is in ~/.arduino15.
 - When installing the Pro Micro board add-on for Arduino IDE, do *not* use the automated installation method or it will recreate
   the Arduino15 directory and result in a non working build (as it installs the add-on for the latest 1.8.x version of the Arduino
   IDE).  Instead, download and install the board add-on manually, as described on the Sparkfun website at
