@@ -18,7 +18,7 @@ This should work with all Amiga keyboards that have their own controller (i.e. a
 The repository also contains [schematics and premade board files](boards) for building a "Pro Micro" based adapter that runs this code.
 3D printable cases for the boards can be found at https://www.thingiverse.com/thing:4593520
 
-Changes to the original code:
+### Changes to the original code:
 - Merged in changes from https://forum.arduino.cc/index.php?topic=139358.90
 - Changed Backslash, Hash and Help key mappings
 - Added reset handling for keyboards without reset line
@@ -30,7 +30,49 @@ Changes to the original code:
 - send data via USB during handshake pulse, in order to not miss next key event
 - Added option to use a switch between pin 4 and ground to select an alternative keymap in order to make codes of keys available that do not exist on the amiga keyboard (currently only used for providing F11 and F12 (which are used by V4SA to toggle options) on F1 and F2)
 
-Building for V4-SA:
+
+### Uploading the precompiled hex file to the microcontroller
+To ease the installation process I've uploaded a precompiled build: [amigakb.hex](amigakb.hex)
+This file can be uploaded to the microcontroller using AVRDUDE: https://www.nongnu.org/avrdude/
+
+#### Linux
+
+Most distributions likely have an AVRDUDE package, for example on Ubuntu it can be installed using:
+```
+sudo apt-get install avrdude
+```
+When you plug in a "fresh" pro-micro the built-in CDC serial port will be recognized as a tty.
+Here is an example output of `dmesg` when the microcontroller gets connected:
+```
+usb 1-9: new full-speed USB device number 110 using xhci_hcd
+usb 1-9: New USB device found, idVendor=2341, idProduct=0036, bcdDevice= 0.01
+usb 1-9: New USB device strings: Mfr=2, Product=1, SerialNumber=0
+usb 1-9: Product: Arduino Leonardo
+usb 1-9: Manufacturer: Arduino LLC
+cdc_acm 1-9:1.0: ttyACM0: USB ACM device
+```
+Here the name of the serial port is `ttyACM0`.
+This port can be used to program the microcontroller with the downloaded hex file:
+```
+sudo avrdude -v -patmega32u4 -cavr109 -P/dev/ttyACM0 -b57600 -D -Uflash:w:amigakb.hex:i
+```
+#### Windows
+
+You can download a Windows version of AVRDUDE from https://github.com/avrdudes/avrdude/releases.
+
+Extract the AVRDUDE package and place the [amigakb.hex](amigakb.hex) file right next to the extracted files. Start a Windows Command Prompt in the same directory (for example by typing `cmd.exe` in the explorer address bar).
+
+When you plug in a "fresh" pro-micro the built in CDC serial port will be recognized as a new COM port.
+
+In this example the device manager has an entry called `USB Serial Device (COM5)`.
+
+This port can be used to program the microcontroller with the downloaded hex file.
+In the Windows Command Prompt type:
+```
+avrdude.exe -v -patmega32u4 -cavr109 -v -PCOM5 -b57600 -D -Uflash:w:amigakb.hex:i
+```
+
+### Building for V4-SA:
 - Use Arduino IDE v1.6.5-r5 (needed for the changes below - the last version before a refactoring of the USB stack).
   Note that if you have used a newer version, such as 1.8.x, it might prevent the 1.6.5 version from working due to it using
   incompatible compiler switches or adding incompatible packages.  If you get a linker error mentioning LTO (Link Time Optimisation)
@@ -48,7 +90,7 @@ Building for V4-SA:
   of patch do not work properly (at least on Windows), so look out for error messages such as "Hunk #X FAILED at XXX." or you'll
   be building an unpatched USB stack and will wonder why it doesn't work on the Vampire!
 
-TODO:
+### TODO:
 - Add reset handling for A500 keyboard (i.e. keyboard with reset line) (optional as the current reset handling also is sufficient for A500 keyboards)
 - Fix mapping of numpad '(' and ')' keys (Amiga keycodes 0x5a, and 0x5b) (these seem currently not to be available on V4)
 - A500 keyboard: make LEDs controllable via USB (i.e. switch drive led on/off, switch power led bright/dim)
