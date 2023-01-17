@@ -58,7 +58,7 @@ sudo avrdude -v -patmega32u4 -cavr109 -P/dev/ttyACM0 -b57600 -D -Uflash:w:amigak
 ```
 #### Windows
 
-You can download a Windows version of AVRDUDE from https://github.com/avrdudes/avrdude/releases.
+You can download a Windows version of AVRDUDE from https://github.com/mariusgreuel/avrdude/releases.
 
 Extract the AVRDUDE package and place the [amigakb.hex](amigakb.hex) file right next to the extracted files. Start a Windows Command Prompt in the same directory (for example by typing `cmd.exe` in the explorer address bar).
 
